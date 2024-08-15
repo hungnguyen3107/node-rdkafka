@@ -5,9 +5,8 @@ const app = express();
 app.use(express.json());
 
 let messages = [];
-let consumer; // Định nghĩa biến consumer toàn cục
+let consumer;
 
-// Kafka consumer configuration function
 function createConsumer(config, onData) {
   consumer = new Kafka.KafkaConsumer(config, { 'auto.offset.reset': 'earliest' });
 
@@ -23,7 +22,6 @@ function createConsumer(config, onData) {
   });
 }
 
-// Function to consume Kafka messages
 async function consumeMessages(bootstrapServers) {
   const config = {
     'bootstrap.servers': bootstrapServers,
@@ -33,7 +31,7 @@ async function consumeMessages(bootstrapServers) {
 
   const topic = "Introduce";
   await createConsumer(config, ({ key, value }) => {
-    // Kiểm tra nếu `key` hoặc `value` là null hoặc undefined
+
     const keyString = key ? key.toString() : '<null>';
     const valueString = value ? value.toString() : '<null>';
     
@@ -46,7 +44,6 @@ async function consumeMessages(bootstrapServers) {
   consumer.consume();
 }
 
-// API endpoint to trigger Kafka consumer
 app.post('/consumer', async (req, res) => {
   const { bootstrap_server } = req.body;
   
@@ -54,7 +51,6 @@ app.post('/consumer', async (req, res) => {
     return res.status(400).json({ error: 'bootstrap_server in request body is required' });
   }
 
-  // Ensure previous consumer is disconnected before starting a new one
   if (consumer) {
     consumer.disconnect(() => {
       console.log('Old consumer disconnected');
@@ -70,12 +66,10 @@ app.post('/consumer', async (req, res) => {
   }
 });
 
-// API endpoint to retrieve consumed messages
 app.get('/consumer/messages', (req, res) => {
   res.json({ messages });
 });
 
-// Xử lý ngắt kết nối khi nhận tín hiệu SIGINT
 process.on('SIGINT', () => {
   console.log('\nDisconnecting consumer ...');
   if (consumer) {
@@ -88,7 +82,6 @@ process.on('SIGINT', () => {
   }
 });
 
-// Start the server
 const PORT = 8081;
 const HOST = '0.0.0.0';
 app.listen(PORT, HOST, () => {
