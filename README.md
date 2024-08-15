@@ -1,1 +1,1 @@
-# rkafka-nodejs
+# node-rdkafka
